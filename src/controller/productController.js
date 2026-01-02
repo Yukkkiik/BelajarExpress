@@ -9,7 +9,7 @@ const getAllProducts = async (req, res) => {
 
         if (search) {
             where.OR = [
-                {name: {
+                { name: {
                     contains: search,
                 }
                 },
@@ -66,7 +66,7 @@ const getAllProducts = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             succes: false,
-            message: 'internal server error',
+            message: 'Failed to get products',
         });
     }
 };
@@ -109,7 +109,7 @@ const getProductById = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Internal Server Error',
+            message: 'Failed to get product',
         })
     }
 };
@@ -177,7 +177,7 @@ const createProduct = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Internal Server Error',
+            message: 'Failed to create product',
         })
     }
 };
@@ -256,7 +256,7 @@ const updateProduct = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'internal server error',
+            message: 'Failed to updated category',
         });
     }
 };
@@ -299,7 +299,7 @@ const deleteProduct = async (req,res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: 'Failed to delete product'
         })
     }
 };
