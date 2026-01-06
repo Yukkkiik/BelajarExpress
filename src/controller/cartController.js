@@ -165,9 +165,150 @@ const addToCart = async (req, res) => {
             error: error.message
         })
     }
-}
+};
+
+const updateCartItem = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { itemId } = req.params;
+        const { quantity } = req.body;
+
+        if (!quantity || quantity < 1) {
+            res.status(400).json({
+                success: false,
+                message: 'Valid quantity is required',
+            });
+        }
+
+        const cartItem = await prisma.cartItem.findUnique({
+            where: {
+                id: itemId,
+            },
+            include: {
+                cart: true,
+                product: true,
+            },
+        });
+
+        if (!cartItem || cartItem.cart.userId !== userId) {
+            res.status(404).json({
+                success: false,
+                message: 'Cart item not found',
+            });
+        }
+
+        if (cartItem.product.stock < quantity) {
+            res.status(400).json({
+                success: false,
+                message: 'Insufficient stock',
+            });
+        }
+
+        const updateCartItem = await prisma.cartItem.update({
+            where: {
+                id: itemId,
+            },
+            data: {
+                quantity: parseInt(quantity),
+            },
+            include: {
+                product: true,
+            },
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Cart item updated successfully',
+            data: updateCartItem,
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update cart item',
+            error: error.message
+        })
+    }
+};
+
+const removeFromCart = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { itemId } = req.params;
+
+        const cartItem = await prisma.cartItem.findUnique({
+            where: {
+                id: itemId,
+            },
+            include: {
+                cart: true,
+            },
+        });
+
+        if (!cartItem || cartItem.cart.userId !== userId) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart Item not found',
+            });
+        }
+
+        await prisma.cartItem.delete({
+            where: {
+                id: itemId,
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Cart item removed successfully',
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to remove cart item',
+            error: error.message
+        });
+    }
+};
+
+const clearCart = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const cart = await prisma.cart.findUnique({
+            where: {
+                userId
+            },
+        });
+
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart not found',
+            });
+        }
+
+        await prisma.cartItem.deleteMany({
+            where: {
+                cartId: cart.id,
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Cart cleared successfully',
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to clear cart',
+            error: error.message
+        });
+    }
+};
 
 module.exports = {
     getCart,
     addToCart,
+    updateCartItem,
+    removeFromCart,
+    clearCart,
 };

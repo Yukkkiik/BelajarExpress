@@ -76,6 +76,7 @@ const validateCart = (req, res, next) => {
             errors,
         });
     }
+    next();
 };
 
 module.exports = {
